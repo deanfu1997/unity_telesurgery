@@ -17,12 +17,14 @@ public class Trigger : MonoBehaviour
 		Counter.pegcounter += 1;
 		Counter.recordData = true;
 		Counter.isNewTry = true;
-		// Debug.Log(Counter.pegcounter);
+		Counter.currentWires.Add(gameObject);
+		// Debug.Log(gameObject.name);
 	}
 
 	void OnTriggerExit(Collider collision)
 	{
 		Counter.recordData = false;
+		Counter.currentWires.Remove(gameObject);
 		transform.GetComponent<Renderer>().material.color = bluecolor;
 
 	}

@@ -14,17 +14,19 @@ public class Trigger2 : MonoBehaviour
 	void OnTriggerEnter(Collider collision)
 	{
 		transform.GetComponent<Renderer>().material.color = redcolor;
-		Counter.wirecounter += 1;
-		// Debug.Log(Counter.wirecounter);
+		Counter.pegcounter += 1;
+		Counter.recordData = true;
+		Counter.isNewTry = true;
+		// Counter.currentWires.Add(gameObject);
 	}
 
 	void OnTriggerExit(Collider collision)
 	{
-
+		Counter.recordData = false;
+		Counter.currentWires.Remove(gameObject);
 		transform.GetComponent<Renderer>().material.color = bluecolor;
 
 	}
 
 
 }
-
