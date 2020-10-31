@@ -20,7 +20,8 @@ public class balljoint : MonoBehaviour
     [Tooltip("Idenfier which is used to connect to the sensor. The name depends on the IO type used and the configuration of the sensor.")]
     public string OpenZenIdentifier = "00:04:3E:53:E9:29";
     public string OpenZenIdentifier2 = "00:04:3E:53:E9:98";
-    string filepath = "Assets/debug.txt";
+    private string filepath = "Assets/data/debug.txt";
+    public string filepath_origin = "Assets/data/debug.txt";
     // Humanoid declaration
     public GameObject Human;
     private GameObject[] HumanjointList = new GameObject[4];
@@ -28,28 +29,34 @@ public class balljoint : MonoBehaviour
     public GameObject Hand_demo;
     public GameObject Curved_Wire;
     public GameObject Wire3;
+    public GameObject Test_dist;
+    public GameObject S_wire;
+    public GameObject curve1;
+    public GameObject curve2;
     List<GameObject> currentObjects;
     // public string jsonFilePath = "Assets/Scripts/data2.json";
     public float lu = 0.3f;
     public float lf = 0.25f;
-    bool isIMU = false;
-    bool isUDP = false;
-    bool generateSphere = true;
-    Vector3 hand_orientation;
-    Vector3 spheretrans = new Vector3(0.125f, 0f, 0f);
-    Vector3 spheretrans2 = new Vector3(0.05f, 0f, 0f);
-    Vector3 x0;
-    Vector3 x1;
-    Vector3 x2;
-    Quaternion q;
+    private bool isIMU = false;
+    private bool isUDP = false;
+    private Vector3 hand_orientation;
+    private Vector3 spheretrans = new Vector3(0.125f, 0f, 0f);
+    private Vector3 spheretrans2 = new Vector3(0.05f, 0f, 0f);
+    private Vector3 x0;
+    private Vector3 x1;
+    private Vector3 s;
+    private float radius_halfcircle = 0.05f;
+    private Quaternion q;
     private float timer = 0.0f;
     private float dist = -1.0f;
     private float visualTime = 0.0f;
+    private int fileCounter = 1;
+    private bool generateSphere;
     // Start is called before the first frame update
     void Start()
     {
         Hand_demo.SetActive(!Hand_demo.activeSelf);
-        Curved_Wire.SetActive(!Curved_Wire.activeSelf);
+        S_wire.SetActive(!S_wire.activeSelf);
         initializeJoints();
         
 
@@ -149,57 +156,116 @@ public class balljoint : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        currentObjects = Counter.currentWires;
+        // Debug Distance here:
+        Vector3 test_orientation = Wire3.transform.rotation * Vector3.up;
+        // Debug.DrawRay(Wire3.transform.position, test_orientation, Color.red);
+        float distTest = distanceToclosestPoint(Test_dist.transform.position, Wire3.transform.position, test_orientation);
+        // Debug.Log(distTest);
 
+        // assign q and x0 to be hand's orentation and position
+        q = Hand_demo.transform.rotation;
+        x0 = Hand_demo.transform.position;
+        Debug.DrawRay(x0, q * Vector3.up, Color.green);
+        hand_orientation = q * Vector3.up;
+
+        currentObjects = Counter.currentWires;
         // check if there's collision with a wire
         if (currentObjects != null)
         {
             if (currentObjects.Count != 0)
             {
                 float dist_closest = Mathf.Infinity;
+                Vector3 hc_orientation = Vector3.zero;
+                Vector3 orientation_closest = Vector3.zero;
+                float angle_closest = Mathf.Infinity;
+                float angle = angle_closest;
                 foreach (var currentObject in currentObjects)
                 {
                     // Debug.Log(currentObject.name);
-                    Vector3 wire_orientation = currentObject.transform.rotation * Vector3.up;
-                    Debug.DrawRay(currentObject.transform.position, wire_orientation, Color.red);
+                    if (currentObject.name.Contains("curve")){
+                        if (currentObject.name.Contains("curve1"))
+                        {
+                            Vector3 s_offset = new Vector3(0.0125f + 0.05f, 0f, 0.0125f);
+                            Vector3 center = currentObject.transform.position + s_offset;
+                            dist = distanceTocenter(x0, center, radius_halfcircle);
+                            hc_orientation = x0 - center ;
+                            Debug.DrawRay(center, hc_orientation, Color.red);
+                            angle = Vector3.Angle(hc_orientation, hand_orientation);
+                            angle -= 90;
+                            angle = Mathf.Abs(angle);
+                            // Debug.Log(angle);
 
-                    x1 = currentObject.transform.position - spheretrans2;
-                    x2 = currentObject.transform.position + spheretrans2;
-                    dist = distanceToclosestPoint(x0, x1, x2);
+
+                        }
+                        else if (currentObject.name.Contains("curve2")){
+                            Vector3 s2_offset = new Vector3(-0.0125f - 0.05f, 0f, 0.0125f);
+                            Vector3 center = currentObject.transform.position + s2_offset;
+                            dist = distanceTocenter(x0, center, radius_halfcircle);
+                            hc_orientation = x0 - center;
+                            Debug.DrawRay(center, hc_orientation, Color.red);
+                            angle = Vector3.Angle(hc_orientation, hand_orientation);
+                            angle -= 90;
+                            angle = Mathf.Abs(angle);
+                            // Debug.Log(angle);
+                        }
+                    }
+
+                    else
+                    {
+                        Vector3 wire_orientation = currentObject.transform.rotation * Vector3.up;
+                        Debug.DrawRay(currentObject.transform.position, wire_orientation, Color.red);
+
+                        x1 = currentObject.transform.position;
+                        s = wire_orientation;
+                        dist = distanceToclosestPoint(x0, x1, s);
+                        angle = Vector3.Angle(wire_orientation, hand_orientation);
+                    }
                     if (dist < dist_closest)
                     {
                         dist_closest = dist;
+                        angle_closest = angle;
                     }
                     
+
+                }
+
+
+                if (Counter.recordData)
+                {
+                    SaveFile(filepath, dist_closest, angle_closest);
                 }
                 // Debug.Log("Returned cloeset distance:");
                 // Debug.Log(dist_closest);
             }
 
         }
-        q = Hand_demo.transform.rotation;
-        x0 = Hand_demo.transform.position;
-        Debug.DrawRay(x0, q*Vector3.up, Color.green);
-        hand_orientation = q * Vector3.up;
-
-
+        // generate a new data file that has incremental index
+        if (Input.GetKeyDown(KeyCode.N))
+        {
+            Debug.Log("Generating new data file...");
+            string[] file_array = filepath_origin.Split('.');
+            filepath = file_array[0] + fileCounter.ToString() + '.' + file_array[1];
+            Debug.Log(filepath);
+            fileCounter++;
+        }
+        // toggle visibility
         if (Input.GetKeyDown(KeyCode.V))
         {
             ToggleVisibility();
         }
-
+        // switch tasks
         if (Input.GetKeyDown(KeyCode.C))
         {
             SwitchTasks();
         }
-
+        // using IMU input
         if (Input.GetKeyDown(KeyCode.I))
         {
             print("Now using IMU input");
             isIMU = true;
             isUDP = false;
         }
-
+        // using UDP input
         if (Input.GetKeyDown(KeyCode.U))
         {
             print("Now using udp input");
@@ -207,6 +273,7 @@ public class balljoint : MonoBehaviour
             isUDP = true;
         }
 
+        // check if current data is for a new trial, must hit green button to initiate new try
         if (Counter.isNewTry)
         {
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(filepath, true))
@@ -215,12 +282,7 @@ public class balljoint : MonoBehaviour
             }
             Counter.isNewTry = false;
         }
-        if (Counter.recordData)
-        {
-            // dist = distanceToclosestPoint(x0, x1, x2);
-            // SaveFile(filepath);
-            // Debug.Log("Saving file to txt:");
-        }
+
         if (timerclass.timeStart)
         {
             timer += Time.deltaTime;
@@ -235,12 +297,15 @@ public class balljoint : MonoBehaviour
 
         if (timerclass.timeRecord)
         {
+            Debug.Log("Task complete!");
+            /*
             Debug.Log("Task elapsed time is: ");
             Debug.Log(visualTime);
             Debug.Log("peg counter is: ");
             Debug.Log(Counter.pegcounter);
             Debug.Log("wire counter is: ");
             Debug.Log(Counter.wirecounter);
+            */
             timerclass.timeRecord = false;
         }
 
@@ -345,10 +410,10 @@ public class balljoint : MonoBehaviour
                 generateSphere = true;
                 if (generateSphere)
                 {
-                    Vector3 cp = closestPoint(x0, x1, x2);
-                    dist = distanceToclosestPoint(x0, x1, x2);
-                    // Debug.Log(dist);
-                    createSphere(cp);
+                    Vector3 s_offset = new Vector3(0.0125f + 0.05f, 0f, 0.0125f);
+                    createSphere(curve1.transform.position + s_offset);
+                    Vector3 s2_offset = new Vector3(-0.0125f - 0.05f, 0f, 0.0125f);
+                    createSphere(curve2.transform.position + s2_offset);
                 }
 
             }
@@ -357,7 +422,7 @@ public class balljoint : MonoBehaviour
         {
             if (UDPInfo.lastReceivedUDPPacket != null)
             {
-                Vector3 Wrist2Palm = new Vector3(0f, 0f, 0f);
+                // output json stream
                 // Debug.Log(UDPInfo.lastReceivedUDPPacket);
                 Matrix4x4 m = parser.GetMatrix4X4(UDPInfo.lastReceivedUDPPacket);
                 Vector3 UDPpos = m.MultiplyPoint3x4(Vector3.zero);
@@ -426,11 +491,13 @@ public class balljoint : MonoBehaviour
         return final_string;
     }
 
+    // get quaternion from FK matrix
     public static Quaternion QuaternionFromMatrix(Matrix4x4 m) 
     { 
         return Quaternion.LookRotation(m.GetColumn(2), m.GetColumn(1)); 
     }
 
+    // find all joints in a nested gameobject
     void initializeJoints()
     {
         var HumanChildren = Human.GetComponentsInChildren<Transform>();
@@ -455,6 +522,7 @@ public class balljoint : MonoBehaviour
         }
     }
 
+    // GUI
     void OnGUI()
     {
         GUIStyle myButtonStyle = new GUIStyle(GUI.skin.button);
@@ -485,7 +553,7 @@ public class balljoint : MonoBehaviour
         //if (GUI.Button(new Rect(20, 20, 150, 30), "Calibrate Mousepad", myButtonStyle))
         //{
         //    print("Record palm position");
-        //    Calibrate();
+        //    
         //}
         GUI.Label(new Rect(20,20,150,50),
             "Timer: " + visualTime.ToString("f4") + " seconds.", labelDetails);
@@ -500,12 +568,7 @@ public class balljoint : MonoBehaviour
     void SwitchTasks()
     {
         Wire3.SetActive(!Wire3.activeSelf);
-        Curved_Wire.SetActive(!Curved_Wire.activeSelf);
-
-    }
-
-    void Calibrate()
-    {
+        S_wire.SetActive(!S_wire.activeSelf);
 
     }
 
@@ -521,13 +584,13 @@ public class balljoint : MonoBehaviour
     void createSphere(Vector3 pos)
     {
         GameObject mySphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        Vector3 newLoc = new Vector3(0.05f, 0.05f, 0.05f);
+        Vector3 newLoc = new Vector3(0.025f, 0.025f, 0.025f);
         mySphere.transform.localScale = newLoc;
         mySphere.transform.position = pos;
         generateSphere = false;
     }
-    // return the closest point from the hand to the wire
-    // correct
+
+    // return the closest point from the hand to the wire, correct but not used
     Vector3 closestPoint(Vector3 x0, Vector3 x1, Vector3 x2)
     {
         Vector3 norm = x1 - x2;
@@ -536,18 +599,23 @@ public class balljoint : MonoBehaviour
     }
 
     // return the distance from the hand to the wire
-    // correct
-    float distanceToclosestPoint(Vector3 x0, Vector3 x1, Vector3 x2)
+    float distanceToclosestPoint(Vector3 x0, Vector3 x1, Vector3 s)
     {
-        Vector3 norm = x1 - x2;
-        Vector3 crossproduct = Vector3.Cross(x1 - x0, x2 - x1);
-        float d =  crossproduct.magnitude / norm.magnitude;
+        Vector3 crossproduct = Vector3.Cross(x1 - x0, s);
+        float d =  crossproduct.magnitude / s.magnitude;
         return d;
     }
 
-    public void SaveFile(string filepath)
+    float distanceTocenter(Vector3 x0, Vector3 center, float radius)
     {
+        float d = Vector3.Distance(x0, center);
+        d = Mathf.Abs(d - radius);
+        return d;
+    }
 
+    public void SaveFile(string filepath, float distance, float myangle)
+    {
+        /*
         float mytime = timer;
         float mydistance = dist;
         float[] mypos = new float[3];
@@ -560,10 +628,12 @@ public class balljoint : MonoBehaviour
         myquat[2] = q.z;
         myquat[3] = q.w;
         HandData data = new HandData(mytime,mydistance,mypos, myquat);
+        */
         using (System.IO.StreamWriter file = new System.IO.StreamWriter(filepath, true))
         {
-            file.WriteLine(data.time + "," + data.distance + "," + x0.x + "," +x0.y + "," +x0.z);
+            file.WriteLine(timer + "," + distance + "," + myangle );
         }
+        Debug.Log(timer + "," + distance + "," + myangle);
     }
 
 }

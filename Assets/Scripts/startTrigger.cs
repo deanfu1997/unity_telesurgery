@@ -19,6 +19,9 @@ public class startTrigger : MonoBehaviour
 		timerclass.timeReset = true;
 		Counter.pegcounter = 0;
 		Counter.wirecounter = 0;
+		Counter.isNewTry = true;
+		// start data recording at start
+		Counter.recordData = true;
 	}
 	void OnTriggerExit(Collider collision)
 	{

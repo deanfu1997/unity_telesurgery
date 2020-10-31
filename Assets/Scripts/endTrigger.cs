@@ -15,8 +15,11 @@ public class endTrigger : MonoBehaviour
 	{
 		Material mat = gameObject.GetComponent<Renderer>().material;
 		ChangeAlpha(mat, 0.5f);
+		// stop data recording at stop
+		Counter.recordData = false;
 		timerclass.timeStart = false;
 		timerclass.timeRecord = true;
+
 
 	}
 	void OnTriggerExit(Collider collision)
