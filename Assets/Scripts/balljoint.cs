@@ -151,7 +151,7 @@ public class balljoint : MonoBehaviour
     {
         currentObjects = Counter.currentWires;
 
-        // check if current
+        // check if there's collision with a wire
         if (currentObjects != null)
         {
             if (currentObjects.Count != 0)
@@ -159,20 +159,21 @@ public class balljoint : MonoBehaviour
                 float dist_closest = Mathf.Infinity;
                 foreach (var currentObject in currentObjects)
                 {
-                    Debug.Log(currentObject.name);
+                    // Debug.Log(currentObject.name);
+                    Vector3 wire_orientation = currentObject.transform.rotation * Vector3.up;
+                    Debug.DrawRay(currentObject.transform.position, wire_orientation, Color.red);
+
                     x1 = currentObject.transform.position - spheretrans2;
                     x2 = currentObject.transform.position + spheretrans2;
-                    Debug.Log("current dist:");
                     dist = distanceToclosestPoint(x0, x1, x2);
-                    Debug.Log(dist);
                     if (dist < dist_closest)
                     {
                         dist_closest = dist;
                     }
                     
                 }
-                Debug.Log("Returned cloeset distance:");
-                Debug.Log(dist_closest);
+                // Debug.Log("Returned cloeset distance:");
+                // Debug.Log(dist_closest);
             }
 
         }
@@ -356,12 +357,12 @@ public class balljoint : MonoBehaviour
         {
             if (UDPInfo.lastReceivedUDPPacket != null)
             {
-                Vector3 Wrist2Palm = new Vector3(0.2f, 0f, 0f);
+                Vector3 Wrist2Palm = new Vector3(0f, 0f, 0f);
                 // Debug.Log(UDPInfo.lastReceivedUDPPacket);
                 Matrix4x4 m = parser.GetMatrix4X4(UDPInfo.lastReceivedUDPPacket);
-                Vector3 UDPpos = m.MultiplyPoint3x4(Wrist2Palm);
+                Vector3 UDPpos = m.MultiplyPoint3x4(Vector3.zero);
                 // Debug.Log(UDPpos);
-                Vector3 offset = new Vector3(0.0f, -0.1f, 0.9f);
+                Vector3 offset = new Vector3(0f, 0.15f, 0.9f);
                 Hand_demo.transform.position = UDPpos + offset;
                 Quaternion rot = QuaternionFromMatrix(m);
                 Quaternion handoffset = Quaternion.AngleAxis(0, Vector3.right);
