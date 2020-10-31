@@ -20,8 +20,8 @@ public class balljoint : MonoBehaviour
     [Tooltip("Idenfier which is used to connect to the sensor. The name depends on the IO type used and the configuration of the sensor.")]
     public string OpenZenIdentifier = "00:04:3E:53:E9:29";
     public string OpenZenIdentifier2 = "00:04:3E:53:E9:98";
-    private string filepath = "Assets/data/debug.txt";
-    public string filepath_origin = "Assets/data/debug.txt";
+    private string filepath_origin = "Assets/data/Ehsan_IMU.txt";
+    private string filepath = "Assets/data/Ehsan_IMU.txt";
     // Humanoid declaration
     public GameObject Human;
     private GameObject[] HumanjointList = new GameObject[4];
@@ -427,7 +427,7 @@ public class balljoint : MonoBehaviour
                 Matrix4x4 m = parser.GetMatrix4X4(UDPInfo.lastReceivedUDPPacket);
                 Vector3 UDPpos = m.MultiplyPoint3x4(Vector3.zero);
                 // Debug.Log(UDPpos);
-                Vector3 offset = new Vector3(0f, 0.15f, 0.9f);
+                Vector3 offset = new Vector3(0f, 0.15f, 0.92f);
                 Hand_demo.transform.position = UDPpos + offset;
                 Quaternion rot = QuaternionFromMatrix(m);
                 Quaternion handoffset = Quaternion.AngleAxis(0, Vector3.right);
