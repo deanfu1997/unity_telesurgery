@@ -20,8 +20,8 @@ public class balljoint : MonoBehaviour
     [Tooltip("Idenfier which is used to connect to the sensor. The name depends on the IO type used and the configuration of the sensor.")]
     public string OpenZenIdentifier = "00:04:3E:53:E9:29";
     public string OpenZenIdentifier2 = "00:04:3E:53:E9:98";
-    private string filepath_origin = "Assets/data/Ehsan_IMU.txt";
-    private string filepath = "Assets/data/Ehsan_IMU.txt";
+    private string filepath_origin = "Assets/data/Corrected_MTM.txt";
+    private string filepath = "Assets/data/Corrected_MTM.txt";
     // Humanoid declaration
     public GameObject Human;
     private GameObject[] HumanjointList = new GameObject[4];
