@@ -7,3 +7,4 @@ I: Using IMU Input
 	-- R: Record Trans Matrices
 	-- J: Generate json string
 U: Using UDP Input
+S: Start/stop UDP sender

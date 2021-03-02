@@ -52,9 +52,18 @@ public class balljoint : MonoBehaviour
     private float visualTime = 0.0f;
     private int fileCounter = 1;
     private bool generateSphere;
+    private bool sendmsg = false;
+    private string sendIp = "192.168.1.4";
+    private int sendPort = 48055;
+    private int receivePort = 11000;
+
+    private UdpConnection connection;
     // Start is called before the first frame update
     void Start()
     {
+        connection = new UdpConnection();
+        connection.StartConnection(sendIp, sendPort, receivePort);
+
         Hand_demo.SetActive(!Hand_demo.activeSelf);
         S_wire.SetActive(!S_wire.activeSelf);
         initializeJoints();
@@ -393,7 +402,22 @@ public class balljoint : MonoBehaviour
             // Quaternion handoffset = Quaternion.AngleAxis(0, Vector3.right);
             Hand_demo.transform.rotation = rot * handoffset;
 
-            if (Input.GetKeyDown(KeyCode.R))
+            // send UDP
+            string sendF = VectorFromMatrix(FK);
+            if (sendmsg)
+            {
+                Debug.Log("Sending UDP");
+                Debug.Log(sendF);
+                connection.Send(sendF);
+            }
+
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                sendmsg = !sendmsg;
+            }
+
+
+                if (Input.GetKeyDown(KeyCode.R))
             {
                 print("Record Transformation Matrices: ");
                 print(World2Shoulder);
@@ -402,6 +426,7 @@ public class balljoint : MonoBehaviour
             }
             if (Input.GetKeyDown(KeyCode.J))
             {
+                
                 // Serialize transformation matrix to mock json string
                 string mockF = VectorFromMatrix(FK);
                 Debug.Log("Use the following for Simulated Json strings");
@@ -579,6 +604,8 @@ public class balljoint : MonoBehaviour
             OpenZen.ZenReleaseSensor(mZenHandle, mSensorHandle);
         }
         OpenZen.ZenShutdown(mZenHandle);
+
+        connection.Stop();
     }
 
     void createSphere(Vector3 pos)

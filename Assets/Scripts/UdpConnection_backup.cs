@@ -69,7 +69,7 @@ public class UdpConnection_backup
             Thread.Sleep(1);
         }
     }
-
+    /*
     public string[] getMessages()
     {
         string[] pendingMessages = new string[0];
@@ -86,6 +86,7 @@ public class UdpConnection_backup
 
         return pendingMessages;
     }
+    */
 
     public void Send(string message)
     {

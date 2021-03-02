@@ -16,17 +16,17 @@ public class UDPSend : MonoBehaviour
     {
         string sendIp = "127.0.0.1";
         int sendPort = 12345;
-        // int receivePort = 11000;
+        int receivePort = 11000;
 
         connection = new UdpConnection();
-        connection.StartConnection(sendIp, sendPort);
+        connection.StartConnection(sendIp, sendPort, receivePort);
     }
 
     void Update()
     {
         // foreach (var message in connection.getMessages()) Debug.Log(message);
 
-        connection.Send("Hi!");
+        connection.Send("WHY ARE YOU GAE??");
     }
 
     void OnDestroy()
