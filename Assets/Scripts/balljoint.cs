@@ -53,7 +53,7 @@ public class balljoint : MonoBehaviour
     private int fileCounter = 1;
     private bool generateSphere;
     private bool sendmsg = false;
-    private string sendIp = "192.168.1.4";
+    private string sendIp = "10.194.81.88";
     private int sendPort = 48055;
     private int receivePort = 11000;
 
@@ -407,7 +407,8 @@ public class balljoint : MonoBehaviour
             if (sendmsg)
             {
                 Debug.Log("Sending UDP");
-                Debug.Log(sendF);
+                //Debug.Log(FK);
+                //Debug.Log(sendF);
                 connection.Send(sendF);
             }
 
