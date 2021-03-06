@@ -45,6 +45,7 @@ public class UdpConnection
     {
         IPEndPoint remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
+        /*
         while (threadRunning)
         {
             try
@@ -68,6 +69,7 @@ public class UdpConnection
             }
             Thread.Sleep(1);
         }
+        */
     }
 
 

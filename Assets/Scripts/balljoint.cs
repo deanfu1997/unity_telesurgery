@@ -22,6 +22,7 @@ public class balljoint : MonoBehaviour
     public string OpenZenIdentifier2 = "00:04:3E:53:E9:98";
     private string filepath_origin = "Assets/data/Corrected_MTM.txt";
     private string filepath = "Assets/data/Corrected_MTM.txt";
+    private string calibrationfile = "Assets/data/calibration/Calibration.txt";
     // Humanoid declaration
     public GameObject Human;
     private GameObject[] HumanjointList = new GameObject[4];
@@ -418,12 +419,20 @@ public class balljoint : MonoBehaviour
             }
 
 
-                if (Input.GetKeyDown(KeyCode.R))
+            if (Input.GetKeyDown(KeyCode.R))
             {
-                print("Record Transformation Matrices: ");
-                print(World2Shoulder);
-                print(Shoulder2Elbow);
-                print(Elbow2Wrist);
+                print("calibration sequence: bl,br,tr,tl");
+                print("Recorded Transformation Matrices: ");
+                calibration(calibrationfile, World2Shoulder, Shoulder2Elbow, Elbow2Wrist);
+
+            }
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                Debug.Log("New Calibration Trail");
+                using (System.IO.StreamWriter file = new System.IO.StreamWriter(calibrationfile, true))
+                {
+                    file.WriteLine("New Try \n");
+                }
             }
             if (Input.GetKeyDown(KeyCode.J))
             {
@@ -662,6 +671,18 @@ public class balljoint : MonoBehaviour
             file.WriteLine(timer + "," + distance + "," + myangle );
         }
         Debug.Log(timer + "," + distance + "," + myangle);
+    }
+
+    public void calibration(string filepath, Matrix4x4 w2s, Matrix4x4 s2e, Matrix4x4 e2w)
+    {
+
+        using (System.IO.StreamWriter file = new System.IO.StreamWriter(filepath, true))
+        {
+            file.WriteLine(w2s);
+            file.WriteLine(s2e);
+            file.WriteLine(e2w);
+
+        }
     }
 
 }
