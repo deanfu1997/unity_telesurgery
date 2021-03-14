@@ -14,12 +14,19 @@ public class balljoint : MonoBehaviour
     // 2nd IMU
     ZenSensorHandle_t mSensorHandle2 = new ZenSensorHandle_t();
 
-    public GameObject IMU29, IMU98;
+    // 3rd IMU
+    ZenSensorHandle_t mSensorHandle3 = new ZenSensorHandle_t();
+
+    public enum OpenZenIoTypes { SiUsb, Bluetooth };
+
+    public GameObject IMU29, IMU98, IMUusb;
     [Tooltip("IO Type which OpenZen should use to connect to the sensor.")]
     public string OpenZenIoType = "Bluetooth";
+    public OpenZenIoTypes OpenZenIoType2 = OpenZenIoTypes.SiUsb;
     [Tooltip("Idenfier which is used to connect to the sensor. The name depends on the IO type used and the configuration of the sensor.")]
     public string OpenZenIdentifier = "00:04:3E:53:E9:29";
     public string OpenZenIdentifier2 = "00:04:3E:53:E9:98";
+    public string OpenZenIdentifier3 = "lpmsto2000985";
     private string filepath_origin = "Assets/data/Corrected_MTM.txt";
     private string filepath = "Assets/data/Corrected_MTM.txt";
     private string calibrationfile = "Assets/data/calibration/Calibration.txt";
@@ -38,6 +45,7 @@ public class balljoint : MonoBehaviour
     // public string jsonFilePath = "Assets/Scripts/data2.json";
     public float lu = 0.3f;
     public float lf = 0.25f;
+    public float lh = 0.2f;
     private bool isIMU = false;
     private bool isUDP = false;
     private Vector3 hand_orientation;
@@ -160,6 +168,44 @@ public class balljoint : MonoBehaviour
                (int)EZenImuProperty.ZenImuProperty_OutputQuat, true);
 
             print("Sensor 98 configuration complete");
+        }
+
+        var sensorInitError3 = OpenZen.ZenObtainSensorByName(mZenHandle,
+            OpenZenIoType2.ToString(),
+            OpenZenIdentifier3,
+            0,
+            mSensorHandle3);
+
+        if (sensorInitError3 != ZenSensorInitError.ZenSensorInitError_None)
+        {
+            print("Error while connecting to sensor USB.");
+        }
+        else
+        {
+            ZenComponentHandle_t mComponent3 = new ZenComponentHandle_t();
+            OpenZen.ZenSensorComponentsByNumber(mZenHandle, mSensorHandle3, OpenZen.g_zenSensorType_Imu, 0, mComponent3);
+
+            // enable sensor streaming, normally on by default anyways
+            OpenZen.ZenSensorComponentSetBoolProperty(mZenHandle, mSensorHandle3, mComponent3,
+               (int)EZenImuProperty.ZenImuProperty_StreamData, true);
+
+            // set offset mode to heading 
+            OpenZen.ZenSensorComponentSetInt32Property(mZenHandle, mSensorHandle3, mComponent3,
+                (int)EZenImuProperty.ZenImuProperty_OrientationOffsetMode, 1);
+
+            // set the sampling rate to 100 Hz
+            OpenZen.ZenSensorComponentSetInt32Property(mZenHandle, mSensorHandle3, mComponent3,
+               (int)EZenImuProperty.ZenImuProperty_SamplingRate, 100);
+
+            // filter mode using accelerometer & gyroscope & magnetometer
+            OpenZen.ZenSensorComponentSetInt32Property(mZenHandle, mSensorHandle3, mComponent3,
+               (int)EZenImuProperty.ZenImuProperty_FilterMode, 1);
+
+            // Ensure the Orientation data is streamed out
+            OpenZen.ZenSensorComponentSetBoolProperty(mZenHandle, mSensorHandle3, mComponent3,
+               (int)EZenImuProperty.ZenImuProperty_OutputQuat, true);
+
+            print("Sensor USB configuration complete");
         }
     }
 
@@ -376,6 +422,30 @@ public class balljoint : MonoBehaviour
                             break;
                     }
                 }
+
+                if (zenEvent.sensor.handle == mSensorHandle3.handle)
+                {
+                    switch (zenEvent.eventType)
+                    {
+                        case (int)ZenImuEvent.ZenImuEvent_Sample:
+                            // read quaternion
+                            OpenZenFloatArray fq = OpenZenFloatArray.frompointer(zenEvent.data.imuData.q);
+                            // Unity Quaternion constructor has order x,y,z,w
+                            // Furthermore, y and z axis need to be flipped to 
+                            // convert between the LPMS and Unity coordinate system
+                            Quaternion sensorOrientation = new Quaternion(fq.getitem(1),
+                                                                        fq.getitem(3),
+                                                                        fq.getitem(2),
+                                                                        fq.getitem(0));
+                            IMUusb.transform.rotation = sensorOrientation;
+                            float angle = 0.0f;
+                            Vector3 axis = Vector3.zero;
+                            sensorOrientation.ToAngleAxis(out angle, out axis);
+                            // Rotate elbow joint
+                            HumanjointList[3].transform.rotation = Quaternion.AngleAxis(angle, axis);
+                            break;
+                    }
+                }
             }
         }
 
@@ -388,10 +458,12 @@ public class balljoint : MonoBehaviour
             Vector3 trans0 = HumanjointList[1].transform.position;
             Vector3 trans1 = new Vector3(lu, 0f, 0f); // apply calibrated link length of upperarm
             Vector3 trans2 = new Vector3(lf, 0f, 0f); // apply calibrated link length of forearm
+            Vector3 trans3 = new Vector3(lh, 0f, 0f); // apply calibrated link length of hand
             Matrix4x4 TrueShoulder = HumanjointList[1].transform.localToWorldMatrix;
             Matrix4x4 World2Shoulder = Matrix4x4.TRS(trans0, HumanjointList[1].transform.rotation, scale);
             Matrix4x4 Shoulder2Elbow = Matrix4x4.TRS(trans1, Quaternion.Inverse(HumanjointList[1].transform.rotation) * HumanjointList[2].transform.rotation, scale);
             Matrix4x4 Elbow2Wrist = Matrix4x4.TRS(trans2, Quaternion.Inverse(HumanjointList[2].transform.rotation) * HumanjointList[3].transform.rotation, scale);
+            // Matrix4x4 Wrist2Hand = Matrix4x4.TRS(trans3, Quaternion.Inverse(HumanjointList[3].transform.rotation) * HumanjointList[4].transform.rotation, scale);
 
             Vector3 Wrist2Palm = new Vector3(0.2f, 0f, 0f);
 
@@ -550,7 +622,7 @@ public class balljoint : MonoBehaviour
             {
                 HumanjointList[2] = HumanChildren[i].gameObject;
             }
-            else if (HumanChildren[i].name == "hand")
+            else if (HumanChildren[i].name == "hand_empty")
             {
                 HumanjointList[3] = HumanChildren[i].gameObject;
             }
