@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
 
+
 public class balljoint : MonoBehaviour
 {
     // openzen declaration
@@ -62,8 +63,9 @@ public class balljoint : MonoBehaviour
     private int fileCounter = 1;
     private bool generateSphere;
     private bool sendmsg = false;
-    private string sendIp = "10.194.81.88";
-    private int sendPort = 48055;
+    private string sendIp = "192.168.1.9";
+    // private int sendPort = 48055;
+    private int sendPort = 2345;
     private int receivePort = 11000;
 
     private UdpConnection connection;
@@ -441,7 +443,7 @@ public class balljoint : MonoBehaviour
                             float angle = 0.0f;
                             Vector3 axis = Vector3.zero;
                             sensorOrientation.ToAngleAxis(out angle, out axis);
-                            // Rotate elbow joint
+                            // Rotate wrist joint
                             HumanjointList[3].transform.rotation = Quaternion.AngleAxis(angle, axis);
                             break;
                     }
@@ -463,12 +465,12 @@ public class balljoint : MonoBehaviour
             Matrix4x4 World2Shoulder = Matrix4x4.TRS(trans0, HumanjointList[1].transform.rotation, scale);
             Matrix4x4 Shoulder2Elbow = Matrix4x4.TRS(trans1, Quaternion.Inverse(HumanjointList[1].transform.rotation) * HumanjointList[2].transform.rotation, scale);
             Matrix4x4 Elbow2Wrist = Matrix4x4.TRS(trans2, Quaternion.Inverse(HumanjointList[2].transform.rotation) * HumanjointList[3].transform.rotation, scale);
-            // Matrix4x4 Wrist2Hand = Matrix4x4.TRS(trans3, Quaternion.Inverse(HumanjointList[3].transform.rotation) * HumanjointList[4].transform.rotation, scale);
 
-            Vector3 Wrist2Palm = new Vector3(0.2f, 0f, 0f);
+            Vector3 Wrist2Palm = new Vector3(lh, 0f, 0f);
 
             Matrix4x4 FK = World2Shoulder * Shoulder2Elbow * Elbow2Wrist;
             Vector3 FKpos = FK.MultiplyPoint3x4(Wrist2Palm);
+            Vector3 FKpos1 = new Vector3(FK[0, 3], FK[1, 3], FK[2, 3]);
             Hand_demo.transform.position = FKpos;
             Quaternion rot = QuaternionFromMatrix(FK);
             Quaternion handoffset = Quaternion.AngleAxis(-90, Vector3.right);
@@ -476,18 +478,27 @@ public class balljoint : MonoBehaviour
             Hand_demo.transform.rotation = rot * handoffset;
 
             // send UDP
-            string sendF = VectorFromMatrix(FK);
+            // Backup string sendF = VectorFromMatrix(FK);
+            string sendF = FKpos1.x.ToString() + "," + FKpos1.y.ToString() + "," + FKpos1.z.ToString() + "," + rot.x.ToString() + "," + rot.y.ToString() + "," + rot.z.ToString() + "," + rot.w.ToString();
             if (sendmsg)
             {
-                Debug.Log("Sending UDP");
                 //Debug.Log(FK);
-                //Debug.Log(sendF);
+                Debug.Log(sendF);
                 connection.Send(sendF);
             }
 
             if (Input.GetKeyDown(KeyCode.S))
             {
                 sendmsg = !sendmsg;
+                if (sendmsg == true)
+                {
+                    Debug.Log("Sending UDP");
+                }
+                else
+                {
+                    Debug.Log("Stopped Sending UDP");
+                }
+                
             }
 
 
@@ -674,7 +685,8 @@ public class balljoint : MonoBehaviour
 
     void SwitchTasks()
     {
-        Wire3.SetActive(!Wire3.activeSelf);
+        // Wire3.SetActive(!Wire3.activeSelf);
+        Curved_Wire.SetActive(!Curved_Wire.activeSelf);
         S_wire.SetActive(!S_wire.activeSelf);
 
     }
