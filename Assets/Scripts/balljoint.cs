@@ -28,8 +28,8 @@ public class balljoint : MonoBehaviour
     public string OpenZenIdentifier = "00:04:3E:53:E9:29";
     public string OpenZenIdentifier2 = "00:04:3E:53:E9:98";
     public string OpenZenIdentifier3 = "lpmsto2000985";
-    private string filepath_origin = "Assets/data/Corrected_MTM.txt";
-    private string filepath = "Assets/data/Corrected_MTM.txt";
+    private string filepath_origin = "Assets/data2/Dean_MTM.txt";
+    private string filepath = "Assets/data2/Dean_MTM.txt";
     private string calibrationfile = "Assets/data/calibration/Calibration.txt";
     // Humanoid declaration
     public GameObject Human;
@@ -63,10 +63,10 @@ public class balljoint : MonoBehaviour
     private int fileCounter = 1;
     private bool generateSphere;
     private bool sendmsg = false;
-    private string sendIp = "192.168.1.9";
+    private string sendIp = "10.194.20.182";
     // private int sendPort = 48055;
     private int sendPort = 2345;
-    private int receivePort = 11000;
+    private int receivePort = 48056;
 
     private UdpConnection connection;
     // Start is called before the first frame update
@@ -483,7 +483,7 @@ public class balljoint : MonoBehaviour
             if (sendmsg)
             {
                 //Debug.Log(FK);
-                Debug.Log(sendF);
+                //Debug.Log(sendF);
                 connection.Send(sendF);
             }
 
@@ -550,6 +550,28 @@ public class balljoint : MonoBehaviour
                 Quaternion rot = QuaternionFromMatrix(m);
                 Quaternion handoffset = Quaternion.AngleAxis(0, Vector3.right);
                 Hand_demo.transform.rotation = rot * handoffset;
+
+                string sendU = Hand_demo.transform.position.x.ToString() + "," + Hand_demo.transform.position.y.ToString() + "," + Hand_demo.transform.position.z.ToString() + "," + Hand_demo.transform.rotation.x.ToString() + "," + Hand_demo.transform.rotation.y.ToString() + "," + Hand_demo.transform.rotation.z.ToString() + "," + Hand_demo.transform.rotation.w.ToString();
+                if (sendmsg)
+                {
+                    //Debug.Log(FK);
+                    //Debug.Log(sendU);
+                    connection.Send(sendU);
+                }
+
+                if (Input.GetKeyDown(KeyCode.S))
+                {
+                    sendmsg = !sendmsg;
+                    if (sendmsg == true)
+                    {
+                        Debug.Log("Sending UDP with MTM input");
+                    }
+                    else
+                    {
+                        Debug.Log("Stopped Sending UDP with MTM input");
+                    }
+
+                }
             }
 
         }
@@ -648,7 +670,7 @@ public class balljoint : MonoBehaviour
         GUIStyle labelDetails = new GUIStyle(GUI.skin.GetStyle("label"));
         labelDetails.fontSize = 14;
         labelDetails.normal.textColor = Color.black;
-        if (GUI.Button(new Rect(Screen.width - 170, 20, 150, 30), "IMU29 Heading Reset", myButtonStyle))
+        if (GUI.Button(new Rect(Screen.width - 170, 60, 150, 30), "IMU29 Heading Reset", myButtonStyle))
         {
             print("Performing Heading Reset for IMU29");
             ZenComponentHandle_t mComponent = new ZenComponentHandle_t();
@@ -658,7 +680,7 @@ public class balljoint : MonoBehaviour
                 (int)EZenImuProperty.ZenImuProperty_OrientationOffsetMode, 1);
         }
 
-        if (GUI.Button(new Rect(Screen.width - 170, 60, 150, 30), "IMU98 Heading Reset", myButtonStyle))
+        if (GUI.Button(new Rect(Screen.width - 170, 100, 150, 30), "IMU98 Heading Reset", myButtonStyle))
         {
             print("Performing Heading Reset for IMU98");
             ZenComponentHandle_t mComponent2 = new ZenComponentHandle_t();
@@ -685,8 +707,8 @@ public class balljoint : MonoBehaviour
 
     void SwitchTasks()
     {
-        // Wire3.SetActive(!Wire3.activeSelf);
-        Curved_Wire.SetActive(!Curved_Wire.activeSelf);
+        Wire3.SetActive(!Wire3.activeSelf);
+        // Curved_Wire.SetActive(!Curved_Wire.activeSelf);
         S_wire.SetActive(!S_wire.activeSelf);
 
     }

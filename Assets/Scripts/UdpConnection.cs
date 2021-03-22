@@ -52,6 +52,7 @@ public class UdpConnection
             {
                 Byte[] receiveBytes = client.Receive(ref remoteIpEndPoint); // Blocks until a message returns on this socket from a remote host.
                 string returnData = Encoding.UTF8.GetString(receiveBytes);
+                // Debug.Log(returnData);
 
                 lock (incomingQueue)
                 {
