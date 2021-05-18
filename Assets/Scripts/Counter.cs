@@ -9,4 +9,7 @@ public class Counter
     public static bool recordData = false;
     public static bool isNewTry = false;
     public static List<GameObject> currentWires = new List<GameObject>();
+    public static int clutch_counter = 0;
+    public static int gripper_value;
+    public static int gripper_calibration = 0;
 }

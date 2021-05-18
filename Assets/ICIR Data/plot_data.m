@@ -550,7 +550,7 @@ end
 figure(k)
 k = k+1;
 sgtitle("Overall Box Plot")
-subplot1 = subplot(2,2,1);
+subplot1 = subplot(2,3,1);
 boxplot([pbox_easy; pbox_easy_IMU; epbox_easy; epbox_easy_IMU],[pbox_easy_label; pbox_easy_label_IMU; epbox_easy_label; epbox_easy_label_IMU],'symbol','')
 h = findobj(gca,'Tag','Median');
 set(h,'Visible','off');
@@ -562,7 +562,7 @@ plot(4,p11(2,8), 'k*')
 title('position error of Straight Wire Task')
 ylabel('position error (mm)');
 hold off
-subplot2 = subplot(2,2,2);
+subplot2 = subplot(2,3,2);
 boxplot([pbox_hard; pbox_hard_IMU; epbox_hard; epbox_hard_IMU],[pbox_hard_label; pbox_hard_label_IMU; epbox_hard_label; epbox_hard_label_IMU],'symbol','')
 h = findobj(gca,'Tag','Median');
 set(h,'Visible','off');
@@ -573,7 +573,7 @@ plot(3,p22(1,8), 'k*')
 plot(4,p22(2,8), 'k*')
 title('position error of S-shaped Wire Task')
 ylabel('position error (mm)');
-subplot3 = subplot(2,2,3);
+subplot3 = subplot(2,3,4);
 boxplot([obox_easy; obox_easy_IMU; eobox_easy; eobox_easy_IMU],[obox_easy_label; obox_easy_label_IMU; eobox_easy_label; eobox_easy_label_IMU],'symbol','')
 h = findobj(gca,'Tag','Median');
 set(h,'Visible','off');
@@ -584,7 +584,7 @@ plot(3,o11(1,8), 'k*')
 plot(4,o11(2,8), 'k*')
 title('orientation error of Straight Wire Task')
 ylabel('orientation error (deg)')
-subplot4 = subplot(2,2,4);
+subplot4 = subplot(2,3,5);
 boxplot([obox_hard; obox_hard_IMU; eobox_hard; eobox_hard_IMU],[obox_hard_label; obox_hard_label_IMU; eobox_hard_label; eobox_hard_label_IMU],'symbol','')
 h = findobj(gca,'Tag','Median');
 set(h,'Visible','off');
@@ -596,10 +596,10 @@ plot(4,o22(2,8), 'k*')
 title('orientation error of S-shaped Wire Task')
 ylabel('orientation error (deg)')
 
-ylim(subplot1,[0 30])
-ylim(subplot2,[0 30])
-ylim(subplot3,[0 40])
-ylim(subplot4,[0 40])
+ylim(subplot1,[0 40])
+ylim(subplot2,[0 40])
+ylim(subplot3,[0 60])
+ylim(subplot4,[0 60])
 
 leg = ['1: User1 MTM','2: User1 IMU','3: User2 MTM','4: User2 IMU'];
 

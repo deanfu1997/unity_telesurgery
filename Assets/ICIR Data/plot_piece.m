@@ -28,12 +28,9 @@ p2 = zeros(2,4);
 o1 = zeros(2,4);
 o2 = zeros(2,4);
 
-t11 = zeros(2,4);
-t22 = zeros(2,4);
-p11 = zeros(2,4);
-p22 = zeros(2,4);
-o11 = zeros(2,4);
-o22 = zeros(2,4);
+t11 = zeros(2,8);
+p11 = zeros(2,8);
+o11 = zeros(2,8);
 
 k = 1;
 %% 
@@ -483,59 +480,46 @@ eobox_easy_label_IMU = repmat({'4'},size(eobox_easy_IMU,1),1);
 %% Calculate mean across number of trials
 for i = 1:2
     t1(i,4) = mean(t1(i,1:3));
-    %t2(i,4) = mean(t2(i,1:3));
+    t2(i,4) = mean(t2(i,1:3));
     
     p1(i,4) = mean(p1(i,1:3));
 
-    %p2(i,4) = mean(p2(i,1:3));
+    p2(i,4) = mean(p2(i,1:3));
     
     o1(i,4) = mean(o1(i,1:3));
 
-    %o2(i,4) = mean(o2(i,1:3));
+    o2(i,4) = mean(o2(i,1:3));
 
     
 end
 
 %% round to 3 significant digits
 t1 = round(t1,3,'significant');
-%t2 = round(t2,3,'significant');
+t2 = round(t2,3,'significant');
 p1 = round(p1,3,'significant');
-%p2 = round(p2,3,'significant');
+p2 = round(p2,3,'significant');
 o1 = round(o1,3,'significant');
-%o2 = round(o2,3,'significant');
+o2 = round(o2,3,'significant');
 
 %% Convert data into desired table format
-% for i = 1:2
-%     t11(i,1:3) = t1(i,1:3);
-%     t11(i,5:7) = t2(i,1:3);
-%     t11(i,4) = t1(i,7);
-%     t11(i,8) = t2(i,7);
-%     
-%     t22(i,1:3) = t1(i,4:6);
-%     t22(i,5:7) = t2(i,4:6);
-%     t22(i,4) = t1(i,8);
-%     t22(i,8) = t2(i,8);
-%     
-%     p11(i,1:3) = p1(i,1:3);
-%     p11(i,5:7) = p2(i,1:3);
-%     p11(i,4) = p1(i,7);
-%     p11(i,8) = p2(i,7);
-%     
-%     p22(i,1:3) = p1(i,4:6);
-%     p22(i,5:7) = p2(i,4:6);
-%     p22(i,4) = p1(i,8);
-%     p22(i,8) = p2(i,8);
-%     
-%     o11(i,1:3) = o1(i,1:3);
-%     o11(i,5:7) = o2(i,1:3);
-%     o11(i,4) = o1(i,7);
-%     o11(i,8) = o2(i,7);
-%     
-%     o22(i,1:3) = o1(i,4:6);
-%     o22(i,5:7) = o2(i,4:6);
-%     o22(i,4) = o1(i,8);
-%     o22(i,8) = o2(i,8);
-% end
+for i = 1:2
+    t11(i,1:3) = t1(i,1:3);
+    t11(i,5:7) = t2(i,1:3);
+    t11(i,4) = t1(i,4);
+    t11(i,8) = t2(i,4);
+    
+    p11(i,1:3) = p1(i,1:3);
+    p11(i,5:7) = p2(i,1:3);
+    p11(i,4) = p1(i,4);
+    p11(i,8) = p2(i,4);
+    
+    
+    o11(i,1:3) = o1(i,1:3);
+    o11(i,5:7) = o2(i,1:3);
+    o11(i,4) = o1(i,4);
+    o11(i,8) = o2(i,4);
+    
+end
 
 figure(k)
 k = k+1;
@@ -545,8 +529,10 @@ boxplot([pbox_easy; pbox_easy_IMU; epbox_easy; epbox_easy_IMU],[pbox_easy_label;
 h = findobj(gca,'Tag','Median');
 set(h,'Visible','off');
 hold on
-plot(1,p1(1,4), 'k*')
-plot(2,p1(2,4), 'k*')
+plot(1,p11(1,4), 'k*')
+plot(2,p11(2,4), 'k*')
+plot(3,p11(1,8), 'k*')
+plot(4,p11(2,8), 'k*')
 
 title('position error of Piece-wise Wire Task')
 ylabel('position error (mm)');
@@ -555,24 +541,25 @@ boxplot([obox_easy; obox_easy_IMU; eobox_easy; eobox_easy_IMU],[obox_easy_label;
 h = findobj(gca,'Tag','Median');
 set(h,'Visible','off');
 hold on
-plot(1,o1(1,4), 'k*')
-plot(2,o1(2,4), 'k*')
-
+plot(1,o11(1,4), 'k*')
+plot(2,o11(2,4), 'k*')
+plot(3,o11(1,8), 'k*')
+plot(4,o11(2,8), 'k*')
 title('orientation error of Piece-wise Wire Task')
 ylabel('orientation error (deg)')
 
-ylim(subplot1,[0 40])
-ylim(subplot2,[0 40])
+ylim(subplot1,[0 35])
+ylim(subplot2,[0 35])
 ylim(subplot3,[0 60])
 ylim(subplot4,[0 60])
 
 leg = ['1: User1 MTM','2: User1 IMU','3: User2 MTM','4: User2 IMU'];
 
 
-t1 %completion time
+t11 %completion time
 
-p1 %position error
-o1 %orientation error
+p11 %position error
+o11 %orientation error
 
 
 %% Error precentage
