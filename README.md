@@ -1,5 +1,17 @@
 # unity_telesurgery
 This is the most updated repo for the IMU telesurgery project, as of 03/29/2022. 
+
+## Installation
+
+1. Clone the repo
+   ```sh
+   git clone https://github.com/deanfu1997/unity_telesurgery.git
+   ```
+2. Open an example scene
+   ```
+   .\Assets/Scenes/Ball Joint.unity
+   ```
+3. Enjoy!
 ## Dependencies
 * Unity 
 * Matlab (for calibration)
@@ -16,6 +28,28 @@ This is the most updated repo for the IMU telesurgery project, as of 03/29/2022.
 * **`PSM_Main.cs`**
 
 > This is the main sciprt that's attached to the Scene **PSM_Control**. Has very similar structure as `balljoint.cs` The main difference is this script uses `MyButton.cs` helper function.
+
+* **`Counter.cs`**
+>A public class that stores static variables for different scripts to access.
+
+* **`end_trigger.cs`**
+>The trigger for collider of the stop buttton.
+
+
+* **`MyButton.cs`**
+>A public class for button variables. 
+
+* **`praser.cs`**
+>Praser function that prases received UDP inputs.
+
+* **`startTrigger.cs`**
+>The trigger for collider of the start buttton.
+
+* **`Trigger.cs`**
+>The collision detection script for the wires and obstacles.
+
+* **`UdpConnection.cs, UDPReceive.cs, UDPSend.cs`**
+>A ll UDP functions that ensures communication between the unity program and HoloLens.
 
 * All other scripts are either not used or helper functions/classes, which you can figure out using the comments in the individual scripts
 
@@ -43,7 +77,10 @@ This is the most updated repo for the IMU telesurgery project, as of 03/29/2022.
 
 **J**: Mock json string to debug UDP serilization
 
-
 ## Plugins Used
-* `NonConvexMeshCollider`: Mesh of a non-convex shape for collision detection of the ring
-* `Uduino`: Unity and Arduino Interface API
+
+* [OpenZen](https://bitbucket.org/lpresearch/openzen/src/master/) IMU plugin that runs in unity.
+* [Uduino](https://marcteyssier.com/uduino/) Arduino plugin that runs in unity.
+* [NonConvexMeshCollider](https://assetstore.unity.com/packages/tools/physics/non-convex-mesh-collider-84867) Mesh of a non-convex shape for collision detection of the ring
+
+
