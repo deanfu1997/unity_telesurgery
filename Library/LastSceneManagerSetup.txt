@@ -1,5 +1,5 @@
 sceneSetups:
-- path: Assets/Scenes/AR_Bluetooth.unity
+- path: Assets/Scenes/Ball Joint.unity
   isLoaded: 1
   isActive: 1
   isSubScene: 0
